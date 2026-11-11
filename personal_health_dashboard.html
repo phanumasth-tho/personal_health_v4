@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Pulse - รายงานและวิเคราะห์สุขภาพประจำสัปดาห์</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Prompt & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        },
+                        water: {
+                            50: '#f0f9ff',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                        },
+                        sleep: {
+                            50: '#f5f3ff',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Prompt', 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .custom-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+            border-radius: 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .custom-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- Top Navigation / Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-200">
+                    <i data-lucide="activity" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">Health Pulse Dashboard</h1>
+                    <p class="text-xs text-slate-500">ระบบประเมินสุขภาพส่วนบุคคล 7 วัน</p>
+                </div>
+            </div>
+
+            <!-- Profile Info Badge -->
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex items-center gap-2 bg-slate-100 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-700">
+                    <i data-lucide="scale" class="w-4 h-4 text-emerald-600"></i>
+                    <span>น้ำหนัก: <strong class="text-slate-900">85 กก.</strong></span>
+                </div>
+                <div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3.5 py-1.5 rounded-full text-xs font-semibold">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    <span>9 - 15 พ.ย. 2026</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+
+        <!-- Banner / Welcome Alert -->
+        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
+            <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-white/5 skew-x-12 pointer-events-none"></div>
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 text-xs font-medium border border-emerald-500/30">
+                        <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> สรุปภาพรวมสัปดาห์นี้
+                    </div>
+                    <h2 class="text-xl sm:text-2xl font-bold">พฤติกรรมการนอนดีเยี่ยม! แต่ควรเพิ่มน้ำดื่มวันออกกำลังกาย</h2>
+                    <p class="text-slate-300 text-sm max-w-2xl">
+                        คุณมีการนอนเฉลี่ย 7.1 ชั่วโมง/วัน อยู่ในเกณฑ์สุขภาพดีเยี่ยม อย่างไรก็ตาม ควรเพิ่มการดื่มน้ำในวันที่ออกกำลังกายให้แตะระดับ 3.0 - 3.5 ลิตรเพื่อทดแทนเหงื่อที่เสียไป
+                    </p>
+                </div>
+                <div class="flex-shrink-0 flex gap-3">
+                    <a href="#daily-log" class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-sm px-4 py-2.5 rounded-xl transition shadow-lg shadow-emerald-900/30">
+                        <i data-lucide="list-checks" class="w-4 h-4"></i> ดูบันทึกรายวัน
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 KPI Summary Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            
+            <!-- KPI 1: Days Exercised -->
+            <div class="custom-card p-5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">วันออกกำลังกาย</p>
+                        <h3 class="text-3xl font-extrabold text-slate-900 mt-2">4 <span class="text-base font-normal text-slate-500">/ 7 วัน</span></h3>
+                    </div>
+                    <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
+                        <i data-lucide="flame" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>เป้าหมาย 4-5 วัน/สัปดาห์</span>
+                        <span class="font-bold text-emerald-600">57%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2">
+                        <div class="bg-emerald-500 h-2 rounded-full" style="width: 57%"></div>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg inline-flex items-center gap-1">
+                    <i data-lucide="thumbs-up" class="w-3.5 h-3.5"></i> ทำได้ตามเป้าหมายขั้นต่ำ
+                </div>
+            </div>
+
+            <!-- KPI 2: Total Exercise Duration -->
+            <div class="custom-card p-5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">เวลารวมออกกำลังกาย</p>
+                        <h3 class="text-3xl font-extrabold text-slate-900 mt-2">105 <span class="text-base font-normal text-slate-500">นาที</span></h3>
+                    </div>
+                    <div class="p-3 bg-amber-100 text-amber-600 rounded-xl">
+                        <i data-lucide="timer" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>เกณฑ์มาตรฐาน 150 นาที</span>
+                        <span class="font-bold text-amber-600">ขาดอีก 45 นาที</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2">
+                        <div class="bg-amber-500 h-2 rounded-full" style="width: 70%"></div>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-lg inline-flex items-center gap-1">
+                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> ปรับเพิ่มอีก 15-20 นาที/วัน
+                </div>
+            </div>
+
+            <!-- KPI 3: Average Sleep -->
+            <div class="custom-card p-5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">นอนหลับเฉลี่ย</p>
+                        <h3 class="text-3xl font-extrabold text-slate-900 mt-2">7.1 <span class="text-base font-normal text-slate-500">ชม./วัน</span></h3>
+                    </div>
+                    <div class="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
+                        <i data-lucide="moon" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>เป้าหมาย 7.0 - 8.0 ชม.</span>
+                        <span class="font-bold text-indigo-600">อยู่ในเกณฑ์ดี</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2">
+                        <div class="bg-indigo-500 h-2 rounded-full" style="width: 88%"></div>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg inline-flex items-center gap-1">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> ฟื้นฟูร่างกายได้ดีมาก
+                </div>
+            </div>
+
+            <!-- KPI 4: Average Water Intake -->
+            <div class="custom-card p-5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ดื่มน้ำเฉลี่ย</p>
+                        <h3 class="text-3xl font-extrabold text-slate-900 mt-2">2.4 <span class="text-base font-normal text-slate-500">ลิตร/วัน</span></h3>
+                    </div>
+                    <div class="p-3 bg-sky-100 text-sky-600 rounded-xl">
+                        <i data-lucide="droplets" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>เป้าหมาย (85 กก.) 3.0 ลิตร</span>
+                        <span class="font-bold text-sky-600">ขาดอีก 0.6 ลิตร</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2">
+                        <div class="bg-sky-500 h-2 rounded-full" style="width: 75%"></div>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-sky-700 bg-sky-50 border border-sky-100 px-2.5 py-1 rounded-lg inline-flex items-center gap-1">
+                    <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> ควรเพิ่มความสม่ำเสมอ
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Dynamic Charts Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Chart 1: Sleep vs Water Trend (2 Cols on Large Screen) -->
+            <div class="custom-card p-6 lg:col-span-2 flex flex-col justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="line-chart" class="w-5 h-5 text-indigo-500"></i>
+                            แนวโน้มการนอนหลับและการดื่มน้ำ (7 วัน)
+                        </h3>
+                        <p class="text-xs text-slate-500">เปรียบเทียบชั่วโมงการนอนกับปริมาณน้ำดื่มในแต่ละวัน</p>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs font-medium">
+                        <span class="inline-flex items-center gap-1 text-indigo-600">
+                            <span class="w-3 h-3 bg-indigo-500 rounded-full inline-block"></span> ชั่วโมงนอน (ชม.)
+                        </span>
+                        <span class="inline-flex items-center gap-1 text-sky-600">
+                            <span class="w-3 h-3 bg-sky-500 rounded-full inline-block"></span> ปริมาณน้ำ (ลิตร)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-4 relative h-72 sm:h-80 w-full">
+                    <canvas id="sleepWaterChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Exercise Breakdown -->
+            <div class="custom-card p-6 flex flex-col justify-between">
+                <div class="pb-4 border-b border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-5 h-5 text-emerald-500"></i>
+                        สัดส่วนการออกกำลังกาย
+                    </h3>
+                    <p class="text-xs text-slate-500">จำแนกตามประเภทกิจกรรมประจำสัปดาห์</p>
+                </div>
+
+                <div class="my-4 relative h-60 w-full flex items-center justify-center">
+                    <canvas id="exercisePieChart"></canvas>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-center">
+                    <div class="p-2 bg-emerald-50 rounded-xl">
+                        <p class="text-[11px] text-slate-500">วิ่ง</p>
+                        <p class="text-sm font-bold text-emerald-600">60 นาที</p>
+                    </div>
+                    <div class="p-2 bg-indigo-50 rounded-xl">
+                        <p class="text-[11px] text-slate-500">ปั่นจักรยาน</p>
+                        <p class="text-sm font-bold text-indigo-600">45 นาที</p>
+                    </div>
+                    <div class="p-2 bg-slate-100 rounded-xl">
+                        <p class="text-[11px] text-slate-500">วันพักผ่อน</p>
+                        <p class="text-sm font-bold text-slate-600">3 วัน</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Daily Activity Log Section -->
+        <section id="daily-log" class="custom-card p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="calendar-range" class="w-5 h-5 text-emerald-600"></i>
+                        บันทึกสุขภาพรายวัน (9 - 15 พ.ย.)
+                    </h3>
+                    <p class="text-xs text-slate-500">รายละเอียดกิจกรรม ชั่วโมงการนอน และปริมาณน้ำดื่ม</p>
+                </div>
+
+                <!-- Interactive Filter Tabs -->
+                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-medium self-start sm:self-auto">
+                    <button onclick="filterLogs('all')" id="btn-all" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition">ทั้งหมด</button>
+                    <button onclick="filterLogs('exercise')" id="btn-exercise" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">เฉพาะวันออกกำลังกาย</button>
+                    <button onclick="filterLogs('rest')" id="btn-rest" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">วันพักผ่อน</button>
+                </div>
+            </div>
+
+            <!-- Table for Desktop / Cards for Mobile -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-xs text-slate-400 uppercase border-b border-slate-100 bg-slate-50/50">
+                            <th class="py-3 px-4 font-semibold">วัน / วันที่</th>
+                            <th class="py-3 px-4 font-semibold">กิจกรรมออกกำลังกาย</th>
+                            <th class="py-3 px-4 font-semibold">การนอนหลับ</th>
+                            <th class="py-3 px-4 font-semibold">การดื่มน้ำ</th>
+                            <th class="py-3 px-4 font-semibold">สถานะประเมิน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="daily-table-body" class="divide-y divide-slate-100 text-sm">
+                        <!-- Content will be injected by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Recommendations & Insights Section -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div class="custom-card p-6 bg-gradient-to-br from-emerald-500 to-teal-700 text-white md:col-span-1 flex flex-col justify-between">
+                <div>
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="award" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">สรุปผลประเมินรวม</h3>
+                    <p class="text-emerald-100 text-xs leading-relaxed">
+                        สุขภาพในภาพรวมสัปดาห์นี้อยู่ใน <strong class="text-white font-semibold">เกณฑ์ดี (Good Condition)</strong> มีการขยับร่างกายสม่ำเสมอและนอนหลับพักผ่อนได้อย่างเพียงพอ 
+                    </p>
+                </div>
+                <div class="mt-6 pt-4 border-t border-white/20 text-xs text-emerald-100 space-y-2">
+                    <div class="flex justify-between">
+                        <span>ระดับการฟื้นฟูร่างกาย:</span>
+                        <span class="font-bold text-white">88%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>ความสม่ำเสมอในการออกกำลังกาย:</span>
+                        <span class="font-bold text-white">75%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="custom-card p-6 md:col-span-2 space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="lightbulb" class="w-5 h-5 text-amber-500"></i>
+                    ข้อเสนอแนะและสิ่งที่ควรปรับปรุงสัปดาห์ถัดไป
+                </h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    
+                    <!-- Water Recommendation -->
+                    <div class="p-4 rounded-xl bg-sky-50 border border-sky-100 space-y-1.5">
+                        <div class="flex items-center gap-2 font-bold text-sky-900">
+                            <i data-lucide="droplet" class="w-4 h-4 text-sky-600"></i>
+                            1. ปรับเพิ่มน้ำดื่มให้สม่ำเสมอ
+                        </div>
+                        <p class="text-sky-800 leading-relaxed">
+                            สำหรับน้ำหนัก 85 กก. และมีการเสียเหงื่อ ควรตั้งเป้าดื่มน้ำวันละ <strong class="font-semibold">3.0 - 3.5 ลิตร</strong> โดยเฉพาะวันที่วิ่ง/ปั่นจักรยาน ห้ามดื่มต่ำกว่า 2.0 ลิตร
+                        </p>
+                    </div>
+
+                    <!-- Exercise Recommendation -->
+                    <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100 space-y-1.5">
+                        <div class="flex items-center gap-2 font-bold text-emerald-900">
+                            <i data-lucide="activity" class="w-4 h-4 text-emerald-600"></i>
+                            2. ยืดเวลาคาร์ดิโอ & เพิ่ม เวทเทรนนิ่ง
+                        </div>
+                        <p class="text-emerald-800 leading-relaxed">
+                            สัปดาห์นี้ทำได้ 105 นาที สัปดาห์หน้าขยับเวลาวิ่งเป็น session ละ 25-30 นาที ให้ครบ <strong class="font-semibold">150 นาที/สัปดาห์</strong> และเพิ่มการเล่นกล้ามเนื้อ
+                        </p>
+                    </div>
+
+                    <!-- Sleep Recommendation -->
+                    <div class="p-4 rounded-xl bg-indigo-50 border border-indigo-100 space-y-1.5">
+                        <div class="flex items-center gap-2 font-bold text-indigo-900">
+                            <i data-lucide="moon" class="w-4 h-4 text-indigo-600"></i>
+                            3. รักษามาตรฐานการนอนหลับ
+                        </div>
+                        <p class="text-indigo-800 leading-relaxed">
+                            เฉลี่ย 7.1 ชั่วโมงทำได้ดีแล้ว ควรเข้านอนให้ตรงเวลาเพื่อเลี่ยงวันที่มีการนอนต่ำกว่า 7 ชม. (เช่น วันอังคาร/พุธ/อาทิตย์)
+                        </p>
+                    </div>
+
+                    <!-- Stretching Recommendation -->
+                    <div class="p-4 rounded-xl bg-purple-50 border border-purple-100 space-y-1.5">
+                        <div class="flex items-center gap-2 font-bold text-purple-900">
+                            <i data-lucide="heart-pulse" class="w-4 h-4 text-purple-600"></i>
+                            4. ยืดเหยียดกล้ามเนื้อ (Stretching)
+                        </div>
+                        <p class="text-purple-800 leading-relaxed">
+                            อย่าลืม Cool-down ยืดเหยียดขาและข้อเท้าหลังวิ่ง 15-30 นาทีทุกครั้ง เพื่อลดอาการตึงสะสมและป้องกันการบาดเจ็บ
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 text-center text-xs text-slate-400 space-y-1">
+        <p>© 2026 Health Pulse Assessment - ระบบช่วยสรุปและวางแผนสุขภาพส่วนบุคคล</p>
+        <p>คำแนะนำนี้เป็นการประเมินเบื้องต้นจากข้อมูลการทำกิจกรรม ควรปรับใช้ร่วมกับสภาวะร่างกายจริงของคุณ</p>
+    </footer>
+
+    <!-- JavaScript & Logic -->
+    <script>
+        // Data Set
+        const healthData = [
+            { date: '9 พ.ย. (จันทร์)', activity: 'วิ่ง 30 นาที', type: 'running', duration: 30, sleep: 7.2, water: 1.8 },
+            { date: '10 พ.ย. (อังคาร)', activity: 'ปั่นจักรยาน 45 นาที', type: 'cycling', duration: 45, sleep: 6.5, water: 1.5 },
+            { date: '11 พ.ย. (พุธ)', activity: 'ไม่ออกกำลังกาย', type: 'rest', duration: 0, sleep: 6.5, water: 2.5 },
+            { date: '12 พ.ย. (พฤหัสบดี)', activity: 'ไม่ออกกำลังกาย', type: 'rest', duration: 0, sleep: 8.0, water: 3.5 },
+            { date: '13 พ.ย. (ศุกร์)', activity: 'วิ่ง 15 นาที', type: 'running', duration: 15, sleep: 7.5, water: 1.5 },
+            { date: '14 พ.ย. (เสาร์)', activity: 'ไม่ออกกำลังกาย', type: 'rest', duration: 0, sleep: 7.5, water: 4.5 },
+            { date: '15 พ.ย. (อาทิตย์)', activity: 'วิ่ง 15 นาที', type: 'running', duration: 15, sleep: 6.5, water: 1.5 }
+        ];
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Render Table Function
+        function renderTable(filter = 'all') {
+            const tbody = document.getElementById('daily-table-body');
+            tbody.innerHTML = '';
+
+            const filteredData = healthData.filter(item => {
+                if (filter === 'exercise') return item.type !== 'rest';
+                if (filter === 'rest') return item.type === 'rest';
+                return true;
+            });
+
+            filteredData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/80 transition-colors';
+
+                // Activity Icon & Badge
+                let actBadge = '';
+                if (item.type === 'running') {
+                    actBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                        <i data-lucide="footprints" class="w-3.5 h-3.5"></i> ${item.activity}
+                    </span>`;
+                } else if (item.type === 'cycling') {
+                    actBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">
+                        <i data-lucide="bike" class="w-3.5 h-3.5"></i> ${item.activity}
+                    </span>`;
+                } else {
+                    actBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+                        <i data-lucide="coffee" class="w-3.5 h-3.5"></i> พักผ่อน
+                    </span>`;
+                }
+
+                // Sleep Tag
+                let sleepTag = item.sleep >= 7.5 
+                    ? `<span class="text-emerald-600 font-semibold">${item.sleep} ชม. (ดีมาก)</span>` 
+                    : item.sleep >= 7.0 
+                    ? `<span class="text-indigo-600 font-semibold">${item.sleep} ชม. (ตามเกณฑ์)</span>` 
+                    : `<span class="text-amber-600 font-semibold">${item.sleep} ชม. (ควรเพิ่ม)</span>`;
+
+                // Water Tag
+                let waterTag = item.water >= 3.0 
+                    ? `<span class="text-emerald-600 font-semibold">${item.water} ลิตร (ยอดเยี่ยม)</span>`
+                    : item.water >= 2.0 
+                    ? `<span class="text-sky-600 font-semibold">${item.water} ลิตร (พอใช้)</span>`
+                    : `<span class="text-rose-600 font-semibold">${item.water} ลิตร (ต่ำเกินไป)</span>`;
+
+                // Status Badge
+                let statusTag = '';
+                if (item.water >= 3.0 && item.sleep >= 7.0) {
+                    statusTag = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">สมบูรณ์แบบ</span>`;
+                } else if (item.water < 2.0 && item.duration > 0) {
+                    statusTag = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">ขาดน้ำหลังออกกำลัง</span>`;
+                } else {
+                    statusTag = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-600">ปกติ</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 font-medium text-slate-900">${item.date}</td>
+                    <td class="py-3.5 px-4">${actBadge}</td>
+                    <td class="py-3.5 px-4">${sleepTag}</td>
+                    <td class="py-3.5 px-4">${waterTag}</td>
+                    <td class="py-3.5 px-4">${statusTag}</td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Filter Logs Handler
+        function filterLogs(type) {
+            ['all', 'exercise', 'rest'].forEach(t => {
+                const btn = document.getElementById(`btn-${t}`);
+                if (t === type) {
+                    btn.className = 'px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition font-semibold';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition font-normal';
+                }
+            });
+            renderTable(type);
+        }
+
+        // Render Charts on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderTable('all');
+
+            // 1. Dual Axis Chart: Sleep & Water Trend
+            const ctx1 = document.getElementById('sleepWaterChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['9 พ.ย. (จ)', '10 พ.ย. (อ)', '11 พ.ย. (พ)', '12 พ.ย. (พฤ)', '13 พ.ย. (ศ)', '14 พ.ย. (ส)', '15 พ.ย. (อา)'],
+                    datasets: [
+                        {
+                            label: 'การนอนหลับ (ชั่วโมง)',
+                            data: [7.2, 6.5, 6.5, 8.0, 7.5, 7.5, 6.5],
+                            type: 'line',
+                            borderColor: '#7c3aed',
+                            backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: true,
+                            pointBackgroundColor: '#7c3aed',
+                            pointRadius: 5,
+                            yAxisID: 'ySleep'
+                        },
+                        {
+                            label: 'ปริมาณน้ำดื่ม (ลิตร)',
+                            data: [1.8, 1.5, 2.5, 3.5, 1.5, 4.5, 1.5],
+                            backgroundColor: function(context) {
+                                const value = context.dataset.data[context.dataIndex];
+                                return value < 2.0 ? '#f43f5e' : '#0ea5e9';
+                            },
+                            borderRadius: 8,
+                            barThickness: 24,
+                            yAxisID: 'yWater'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            padding: 12,
+                            titleFont: { family: 'Prompt', size: 13 },
+                            bodyFont: { family: 'Prompt', size: 12 },
+                            cornerRadius: 8
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Prompt', size: 11 } }
+                        },
+                        ySleep: {
+                            type: 'linear',
+                            position: 'left',
+                            min: 4,
+                            max: 10,
+                            title: { display: true, text: 'ชั่วโมงนอน (ชม.)', font: { family: 'Prompt', size: 11 } },
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { family: 'Prompt', size: 11 } }
+                        },
+                        yWater: {
+                            type: 'linear',
+                            position: 'right',
+                            min: 0,
+                            max: 5,
+                            title: { display: true, text: 'น้ำดื่ม (ลิตร)', font: { family: 'Prompt', size: 11 } },
+                            grid: { display: false },
+                            ticks: { font: { family: 'Prompt', size: 11 } }
+                        }
+                    }
+                }
+            });
+
+            // 2. Pie Chart: Exercise Ratio
+            const ctx2 = document.getElementById('exercisePieChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['วิ่ง (60 นาที)', 'ปั่นจักรยาน (45 นาที)', 'พักผ่อน (3 วัน)'],
+                    datasets: [{
+                        data: [60, 45, 30],
+                        backgroundColor: ['#10b981', '#6366f1', '#e2e8f0'],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { family: 'Prompt', size: 11 },
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleFont: { family: 'Prompt', size: 12 },
+                            bodyFont: { family: 'Prompt', size: 11 }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
